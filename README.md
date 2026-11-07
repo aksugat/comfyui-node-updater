@@ -53,15 +53,32 @@ A node you just cloned is already at upstream's commit, so it never shows as upd
 
 ### Fresh clones and `requirements.txt`
 
-Every row with a `requirements.txt` shows an **Install requirements** link, even when the node is
+Every row with a `requirements.txt` shows an **Install requirements** button, even when the node is
 `up to date`:
 
 ![Install requirements after a fresh clone](screenshots/requirements.png)
 
-- **By hand**: click the link — it shows what would be installed and asks first.
+- **By hand**: click the button — it shows what would be installed and asks first.
 - **Automatically**: tick `Install requirements.txt after updating (portable Python)`; every node
   that gets updated installs right after the reset. The target interpreter is on the same line
-  (`python: …\python_embeded\python.exe`), `change` picks another `python.exe`.
+  (`python: …\python_embeded\python.exe`); `settings` opens the pip settings.
+
+### Conda or any other environment
+
+`settings` takes a command that ends with `-m pip`, so the install can happen in whichever
+environment ComfyUI runs in:
+
+![pip settings](screenshots/pip-settings.png)
+
+```text
+{python} -m pip                                          (default: the python path above)
+conda run -n comfy --no-capture-output python -m pip
+call C:\miniconda3\Scripts\activate.bat comfy && python -m pip
+```
+
+`{python}` is replaced by the path in the first field, so the simple conda case is pointing that
+field at `…\miniconda3\envs\comfy\python.exe`. The command runs through `cmd`, so `&&` chains and
+activation scripts behave as they do in a terminal.
 
 ### It can't break your ROCm build
 
@@ -91,7 +108,7 @@ Useful for scripts and for checking without the window:
 ```text
 ComfyNodeUpdater.exe --self-test report.txt            # builds throwaway repos, 18 checks, exit 0/1
 ComfyNodeUpdater.exe --check <custom_nodes> report.txt # fetch-only scan, writes report.txt (+ .json)
-ComfyNodeUpdater.exe --pip <node folder> [report.txt] [python.exe]
+ComfyNodeUpdater.exe --pip <node folder> [report.txt] [python.exe] [command]
 ComfyNodeUpdater.exe --folder <custom_nodes>           # open the window on that folder, without saving it
 ComfyNodeUpdater.exe --version
 ```

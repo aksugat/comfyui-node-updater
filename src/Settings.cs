@@ -15,6 +15,9 @@ public sealed class Settings
     public bool InstallRequirements { get; set; }
     public string PythonPath { get; set; } = DefaultPython();
 
+    /// <summary>How pip is reached: "{python} -m pip", or a conda/activation command ending in "-m pip".</summary>
+    public string PipLauncher { get; set; } = PipInstaller.DefaultLauncher;
+
     private static string Folder =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ComfyNodeUpdater");
 
@@ -27,7 +30,11 @@ public sealed class Settings
             if (System.IO.File.Exists(FilePath))
             {
                 var loaded = JsonSerializer.Deserialize<Settings>(System.IO.File.ReadAllText(FilePath));
-                if (loaded is not null && loaded.TargetDir.Length > 0) return loaded;
+                if (loaded is not null && loaded.TargetDir.Length > 0)
+                {
+                    if (string.IsNullOrWhiteSpace(loaded.PipLauncher)) loaded.PipLauncher = PipInstaller.DefaultLauncher;
+                    return loaded;
+                }
             }
         }
         catch

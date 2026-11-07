@@ -39,12 +39,24 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         set
         {
             _settings.PythonPath = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PythonPath)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PythonLabel)));
+            RaisePipLabels();
         }
     }
 
-    public string PythonLabel => $"python: {_settings.PythonPath}";
+    public string PipLabel => PipInstaller.IsDefaultLauncher(_settings.PipLauncher)
+        ? $"python: {_settings.PythonPath}"
+        : $"pip: {_settings.PipLauncher}";
+
+    public string PipTooltip => PipInstaller.IsDefaultLauncher(_settings.PipLauncher)
+        ? _settings.PythonPath
+        : $"{_settings.PipLauncher}\n(python: {_settings.PythonPath})";
+
+    private void RaisePipLabels()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PythonPath)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PipLabel)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PipTooltip)));
+    }
 
     public MainWindow(string? folder = null)
     {
@@ -307,7 +319,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         try
         {
-            var outcome = await PipInstaller.InstallAsync(entry.FullPath, python,
+            var outcome = await PipInstaller.InstallAsync(entry.FullPath, python, _settings.PipLauncher,
                 line => Dispatcher.Invoke(() => Log("  " + line)));
 
             entry.SetRequirements(outcome.Ok
@@ -334,22 +346,20 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (!_ephemeral) _settings.Save();
     }
 
-    private void ChangePython_Click(object sender, RoutedEventArgs e)
+    private void PipSettings_Click(object sender, RoutedEventArgs e)
     {
-        var folder = Path.GetDirectoryName(PythonPath);
+        var dialog = new PipSettingsWindow(_settings.PythonPath, _settings.PipLauncher) { Owner = this };
 
-        var dialog = new OpenFileDialog
-        {
-            Title = "Pick the python.exe that runs ComfyUI",
-            Filter = "python.exe|python.exe|Executables (*.exe)|*.exe",
-            InitialDirectory = folder is not null && Directory.Exists(folder) ? folder : "",
-        };
+        if (dialog.ShowDialog() != true) return;
 
-        if (dialog.ShowDialog(this) != true) return;
-
-        PythonPath = dialog.FileName;
+        _settings.PythonPath = dialog.PythonPath;
+        _settings.PipLauncher = dialog.PipLauncher;
         _settings.Save();
-        Log($"Requirements install into {PythonPath}");
+
+        RaisePipLabels();
+        Log(PipInstaller.IsDefaultLauncher(dialog.PipLauncher)
+            ? $"pip: {dialog.PythonPath} -m pip"
+            : $"pip: {dialog.PipLauncher}");
     }
 
     private async void InstallRequirements_Click(object sender, RoutedEventArgs e)

@@ -8,12 +8,19 @@ namespace ComfyNodeUpdater;
 public sealed record PipOutcome(bool Ok, string Message, List<string> Installed, List<string> Blocked);
 
 /// <summary>
-/// Installs a node's requirements.txt into the portable Python. Two rules:
-/// never install a package that would replace the ROCm torch/triton build, and dry-run first so a
-/// dependency that would drag one in is caught before anything is written.
+/// Installs a node's requirements.txt. Two rules: never install a package that would replace the
+/// ROCm torch/triton build, and dry-run first so a dependency that would drag one in is caught
+/// before anything is written.
+///
+/// The pip command comes from the launcher setting, so a conda user can run it in their env:
+///   {python} -m pip                                              (default: the chosen python.exe)
+///   conda run -n comfy --no-capture-output python -m pip
+///   call C:\miniconda3\Scripts\activate.bat comfy &amp;&amp; python -m pip
 /// </summary>
 public static class PipInstaller
 {
+    public const string DefaultLauncher = "{python} -m pip";
+
     /// <summary>Packages whose PyPI wheels would replace the ROCm build of this environment.</summary>
     public static readonly string[] Blocked =
     {
@@ -24,6 +31,9 @@ public static class PipInstaller
 
     public static bool IsBlocked(string name) =>
         Blocked.Contains(name, StringComparer.OrdinalIgnoreCase);
+
+    public static bool IsDefaultLauncher(string launcher) =>
+        string.Equals(launcher.Trim(), DefaultLauncher, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>The package a requirement line names, or null for a comment, blank or pip option.</summary>
     public static string? PackageName(string line)
@@ -78,13 +88,15 @@ public static class PipInstaller
         return text.ToString();
     }
 
-    public static async Task<PipOutcome> InstallAsync(string nodePath, string pythonPath, Action<string> onLine,
-                                                       CancellationToken ct = default)
+    public static async Task<PipOutcome> InstallAsync(string nodePath, string pythonPath, string launcher,
+                                                       Action<string> onLine, CancellationToken ct = default)
     {
         var requirement = Path.Combine(nodePath, "requirements.txt");
 
         if (!File.Exists(requirement)) return new PipOutcome(false, "no requirements.txt", new List<string>(), new List<string>());
-        if (!File.Exists(pythonPath)) return new PipOutcome(false, $"python not found: {pythonPath}", new List<string>(), new List<string>());
+
+        if (IsDefaultLauncher(launcher) && !File.Exists(pythonPath))
+            return new PipOutcome(false, $"python not found: {pythonPath}", new List<string>(), new List<string>());
 
         var (packages, blocked, options) = Filter(ReadLines(nodePath));
 
@@ -102,9 +114,9 @@ public static class PipInstaller
 
         try
         {
-            onLine($"dry run: {packages.Count} package(s) into {pythonPath}");
-            var dry = await RunAsync(pythonPath, nodePath, onLine, ct,
-                "-m", "pip", "install", "-r", temp, "--dry-run", "--report", report,
+            onLine($"dry run: {packages.Count} package(s) via {(IsDefaultLauncher(launcher) ? pythonPath : launcher)}");
+            var dry = await RunPipAsync(pythonPath, launcher, nodePath, onLine, ct,
+                "install", "-r", temp, "--dry-run", "--report", report,
                 "--disable-pip-version-check", "--no-input", "--progress-bar", "off");
 
             if (dry.ExitCode == 0 && File.Exists(report))
@@ -124,16 +136,20 @@ public static class PipInstaller
 
                 onLine($"will install: {string.Join(", ", wouldInstall)}");
             }
-            else if (dry.ExitCode != 0)
+            else if (dry.ExitCode != 0 && IsNoDryRun(dry.StandardError))
             {
                 // an older pip without --dry-run: install without dependencies instead of guessing
                 onLine("pip has no --dry-run; installing with --no-deps");
-                var noDeps = await RunAsync(pythonPath, nodePath, onLine, ct,
-                    "-m", "pip", "install", "-r", temp, "--no-deps", "--disable-pip-version-check", "--no-input",
+                var noDeps = await RunPipAsync(pythonPath, launcher, nodePath, onLine, ct,
+                    "install", "-r", temp, "--no-deps", "--disable-pip-version-check", "--no-input",
                     "--progress-bar", "off");
                 return new PipOutcome(noDeps.ExitCode == 0,
                     noDeps.ExitCode == 0 ? "installed (without dependencies)" : $"pip failed: {LastLine(noDeps.StandardError)}",
                     packages, blocked);
+            }
+            else if (dry.ExitCode != 0)
+            {
+                return new PipOutcome(false, $"pip failed: {LastLine(dry.StandardError)}", new List<string>(), blocked);
             }
             else
             {
@@ -141,8 +157,8 @@ public static class PipInstaller
             }
 
             onLine("installing...");
-            var install = await RunAsync(pythonPath, nodePath, onLine, ct,
-                "-m", "pip", "install", "-r", temp, "--disable-pip-version-check", "--no-input", "--progress-bar", "off");
+            var install = await RunPipAsync(pythonPath, launcher, nodePath, onLine, ct,
+                "install", "-r", temp, "--disable-pip-version-check", "--no-input", "--progress-bar", "off");
 
             if (install.ExitCode != 0)
                 return new PipOutcome(false, $"pip failed: {LastLine(install.StandardError)}", new List<string>(), blocked);
@@ -165,6 +181,10 @@ public static class PipInstaller
         var path = Path.Combine(nodePath, "requirements.txt");
         return File.Exists(path) ? File.ReadAllLines(path).ToList() : new List<string>();
     }
+
+    private static bool IsNoDryRun(string stderr) =>
+        stderr.Contains("--dry-run", StringComparison.OrdinalIgnoreCase) ||
+        stderr.Contains("no such option", StringComparison.OrdinalIgnoreCase);
 
     private static List<string> ReportNames(string reportPath)
     {
@@ -194,14 +214,49 @@ public static class PipInstaller
         return names;
     }
 
+    /// <summary>Runs "install ..." through the launcher: the python directly, or a shell command.</summary>
+    private static async Task<ProcessResult> RunPipAsync(string pythonPath, string launcher, string workingDirectory,
+                                                         Action<string> onLine, CancellationToken ct, params string[] pipArgs)
+    {
+        var all = new[] { "-m", "pip" }.Concat(pipArgs).ToArray();
+
+        if (IsDefaultLauncher(launcher))
+        {
+            return await RunAsync(pythonPath, null, workingDirectory, onLine, ct, all);
+        }
+
+        var command = launcher.Replace("{python}", Quote(pythonPath)).Trim()
+                      + " " + string.Join(' ', pipArgs.Select(Quote));
+
+        // Run it from a temporary .cmd: cmd's own parsing then handles the quotes, including a
+        // launcher under a path with spaces ("C:\...\my scripts\pip.cmd") and && chains.
+        var shell = Environment.GetEnvironmentVariable("COMSPEC") ?? "cmd.exe";
+        var script = Path.Combine(Path.GetTempPath(), $"cnupd_pip_{Guid.NewGuid():N}.cmd");
+
+        try
+        {
+            File.WriteAllText(script, "@echo off\r\n" + command + "\r\n");
+            return await RunAsync(shell, $"/d /c \"{script}\"", workingDirectory, onLine, ct, null);
+        }
+        finally
+        {
+            try { File.Delete(script); } catch { /* temp */ }
+        }
+    }
+
+    private static string Quote(string argument) =>
+        argument.Length > 0 && !argument.Any(char.IsWhiteSpace) && !argument.Contains('"')
+            ? argument
+            : $"\"{argument}\"";
+
     private sealed record ProcessResult(int ExitCode, string StandardError);
 
-    private static async Task<ProcessResult> RunAsync(string pythonPath, string workingDirectory, Action<string> onLine,
-                                                      CancellationToken ct, params string[] args)
+    private static async Task<ProcessResult> RunAsync(string fileName, string? arguments, string workingDirectory,
+                                                      Action<string> onLine, CancellationToken ct, string[]? argv)
     {
         var psi = new ProcessStartInfo
         {
-            FileName = pythonPath,
+            FileName = fileName,
             WorkingDirectory = workingDirectory,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -211,11 +266,13 @@ public static class PipInstaller
             StandardErrorEncoding = Encoding.UTF8,
         };
 
-        foreach (var arg in args) psi.ArgumentList.Add(arg);
+        if (arguments is not null) psi.Arguments = arguments;
+        else foreach (var arg in argv ?? Array.Empty<string>()) psi.ArgumentList.Add(arg);
+
         psi.Environment["PYTHONIOENCODING"] = "utf-8";
         psi.Environment["PIP_DISABLE_PIP_VERSION_CHECK"] = "1";
 
-        using var process = Process.Start(psi) ?? throw new InvalidOperationException("python could not be started");
+        using var process = Process.Start(psi) ?? throw new InvalidOperationException($"{fileName} could not be started");
 
         var errors = new StringBuilder();
 
@@ -239,6 +296,9 @@ public static class PipInstaller
             try { process.Kill(entireProcessTree: true); } catch { /* already gone */ }
             throw;
         }
+
+        // let the async output handlers finish before the reader is disposed
+        process.WaitForExit();
 
         return new ProcessResult(process.ExitCode, errors.ToString());
     }

@@ -65,9 +65,10 @@
                 <CheckBox x:Name="InstallReqBox" Style="{StaticResource Tick}"
                           Content="Install requirements.txt after updating (portable Python)"
                           Checked="InstallReq_Changed" Unchecked="InstallReq_Changed" />
-                <TextBlock Text="{Binding PythonLabel}" FontSize="11" Foreground="{StaticResource Dim}"
-                           Margin="16,0,0,0" VerticalAlignment="Center" ToolTip="{Binding PythonPath}" />
-                <Button Content="change" Style="{StaticResource Link}" Margin="4,0,0,0" Click="ChangePython_Click" />
+                <TextBlock Text="{Binding PipLabel}" FontSize="11" Foreground="{StaticResource Dim}"
+                           Margin="16,0,0,0" VerticalAlignment="Center" MaxWidth="430"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding PipTooltip}" />
+                <Button Content="settings" Style="{StaticResource Link}" Margin="4,0,0,0" Click="PipSettings_Click" />
             </StackPanel>
         </Grid>
 
@@ -112,8 +113,8 @@
                                         </Border>
                                         <TextBlock Text="{Binding ShaText}" FontFamily="Consolas" FontSize="11"
                                                    Foreground="#7D8CA1" HorizontalAlignment="Right" Margin="0,5,0,0" />
-                                        <Button Content="Install requirements" Style="{StaticResource Link}"
-                                                HorizontalAlignment="Right" Margin="0,3,0,0"
+                                        <Button Content="Install requirements" Style="{StaticResource PipButton}"
+                                                HorizontalAlignment="Right" Margin="0,5,0,0"
                                                 Click="InstallRequirements_Click"
                                                 Visibility="{Binding HasRequirements, Converter={StaticResource BoolToVis}}" />
                                     </StackPanel>

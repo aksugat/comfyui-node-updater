@@ -33,19 +33,21 @@ public partial class App : Application
         {
             var node = args[1];
             var report = args.Length >= 3 ? args[2] : null;
-            var python = args.Length >= 4 ? args[3] : Settings.Load().PythonPath;
+            var settings = Settings.Load();
+            var python = args.Length >= 4 ? args[3] : settings.PythonPath;
+            var launcher = args.Length >= 5 ? args[4] : settings.PipLauncher;
 
             var ok = Task.Run(async () =>
             {
                 var lines = new StringBuilder();
-                var outcome = await PipInstaller.InstallAsync(node, python, line => lines.AppendLine(line));
+                var outcome = await PipInstaller.InstallAsync(node, python, launcher, line => lines.AppendLine(line));
 
                 if (report is not null)
                 {
                     try
                     {
                         File.WriteAllText(report,
-                            $"{(outcome.Ok ? "OK" : "FAIL")}  {outcome.Message}\npython: {python}\nnode: {node}\n\n{lines}");
+                            $"{(outcome.Ok ? "OK" : "FAIL")}  {outcome.Message}\npython: {python}\nlauncher: {launcher}\nnode: {node}\n\n{lines}");
                     }
                     catch
                     {
