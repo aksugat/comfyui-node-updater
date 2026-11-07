@@ -1,0 +1,14 @@
+# build output
+bin/
+obj/
+dist/
+
+# user / IDE
+.vs/
+*.user
+*.suo
+
+# reports the app can write next to the exe
+self-test.txt
+version.txt
+*.report.json

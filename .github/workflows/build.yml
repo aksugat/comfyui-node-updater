@@ -1,0 +1,57 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish
+        run: >
+          dotnet publish src -c Release -r win-x64 --self-contained false
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -o dist
+
+      - name: Self-test (throwaway repos, 18 checks)
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath ./dist/ComfyNodeUpdater.exe `
+            -ArgumentList @("--self-test", "dist/self-test.txt") -PassThru -Wait
+          Get-Content dist/self-test.txt
+          if ($process.ExitCode -ne 0) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ComfyNodeUpdater
+          path: dist/ComfyNodeUpdater.exe
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: windows
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ComfyNodeUpdater
+          path: dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ComfyNodeUpdater.exe
+          generate_release_notes: true
