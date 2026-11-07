@@ -139,6 +139,19 @@ For a machine without .NET, add `--self-contained true` (a ~150 MB single file).
 - Tested on Windows 11 with ComfyUI 0.44 and ROCm, against throwaway repositories for the guard and
   end-to-end through the window for the update path.
 
+## Releasing
+
+The version lives in `src/ComfyNodeUpdater.csproj` (`<Version>`). To publish:
+
+```powershell
+# bump <Version>, commit, then:
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+CI builds the exe, runs the 18-check self-test, and attaches the binary to a GitHub release for that
+tag.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
