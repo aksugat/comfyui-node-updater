@@ -19,16 +19,10 @@ public partial class PipSettingsWindow : Window
         LauncherBox.Text = launcher;
     }
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
-
-        var handle = new WindowInteropHelper(this).Handle;
-        var on = 1;
-        DwmSetWindowAttribute(handle, 20, ref on, sizeof(int));
+        TitleBar.Apply(this);
     }
 
     private void Browse_Click(object sender, RoutedEventArgs e)

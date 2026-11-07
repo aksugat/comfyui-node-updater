@@ -4,8 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Microsoft.Win32;
 
 namespace ComfyNodeUpdater;
@@ -81,6 +84,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         OnlyUpdatesBox.IsChecked = _settings.OnlyUpdates;
         InstallReqBox.IsChecked = _settings.InstallRequirements;
+        BuildSwatches();
 
         NodeEntry.SelectionChanged += UpdateFooter;
         Loaded += async (_, _) => await CheckAsync();
@@ -91,6 +95,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _settings.Height = Height;
             _settings.OnlyUpdates = OnlyUpdatesBox.IsChecked == true;
             _settings.InstallRequirements = InstallReqBox.IsChecked == true;
+            _settings.Theme = Themes.Current.Id;
             if (!_ephemeral) _settings.Save();
         };
     }
@@ -255,17 +260,55 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (OnlyUpdatesBox.IsChecked == true) _view.Refresh();
     }
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
+        TitleBar.Apply(this);
+    }
 
-        // Windows draws a white title bar over the dark window unless it is told not to.
-        var handle = new WindowInteropHelper(this).Handle;
-        var on = 1;
-        DwmSetWindowAttribute(handle, 20, ref on, sizeof(int));
+    private void ApplyTitleBar() => TitleBar.Apply(this);
+
+    private void BuildSwatches()
+    {
+        ThemeSwatches.Children.Clear();
+
+        var current = Themes.Current;
+        var style = (Style)FindResource("Swatch");
+
+        foreach (var theme in Themes.All)
+        {
+            var active = theme.Id == current.Id;
+
+            var dot = new Button
+            {
+                Style = style,
+                Background = new SolidColorBrush(Themes.Color(theme.Card)),
+                BorderBrush = new SolidColorBrush(active ? Themes.Color(current.Text) : Themes.Color(theme.Accent)),
+                BorderThickness = new Thickness(active ? 3 : 2),
+                ToolTip = $"{theme.Name} theme",
+                Tag = theme,
+            };
+
+            System.Windows.Automation.AutomationProperties.SetName(dot, $"theme {theme.Name}");
+            dot.Click += Theme_Click;
+            ThemeSwatches.Children.Add(dot);
+        }
+    }
+
+    private void Theme_Click(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).Tag is not Theme theme) return;
+
+        Themes.Apply(theme);
+        _settings.Theme = theme.Id;
+        if (!_ephemeral) _settings.Save();
+
+        BuildSwatches();
+        ApplyTitleBar();
+
+        foreach (var node in _nodes) node.Refresh();
+
+        Log($"Theme: {theme.Name}");
     }
 
     private void Log(string text)

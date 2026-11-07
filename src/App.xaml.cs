@@ -78,7 +78,18 @@ public partial class App : Application
             return;
         }
 
-        var folder = args.Length >= 2 && args[0].Equals("--folder", StringComparison.OrdinalIgnoreCase) ? args[1] : null;
+        var appSettings = Settings.Load();
+
+        string? folder = null;
+        string? themeId = null;
+
+        for (var i = 0; i + 1 < args.Length; i++)
+        {
+            if (args[i].Equals("--folder", StringComparison.OrdinalIgnoreCase)) folder = args[i + 1];
+            else if (args[i].Equals("--theme", StringComparison.OrdinalIgnoreCase)) themeId = args[i + 1];
+        }
+
+        Themes.Apply(Themes.ById(themeId ?? appSettings.Theme));
         new MainWindow(folder).Show();
     }
 }

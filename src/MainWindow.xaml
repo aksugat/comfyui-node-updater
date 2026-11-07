@@ -4,7 +4,7 @@
         Title="ComfyUI Node Updater"
         Width="1020" Height="740" MinWidth="860" MinHeight="560"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource Bg}"
+        Background="{DynamicResource Bg}"
         FontFamily="Segoe UI"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
@@ -29,15 +29,15 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBlock Text="ComfyUI Node Updater" FontSize="21" FontWeight="Bold" Foreground="{StaticResource Text}" />
+                <TextBlock Text="ComfyUI Node Updater" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource Text}" />
                 <TextBlock Text="Pick the nodes to update. Anything with local changes is left alone."
-                           FontSize="12" Foreground="{StaticResource Dim}" Margin="0,3,0,0" />
+                           FontSize="12" Foreground="{DynamicResource Dim}" Margin="0,3,0,0" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Border Background="{StaticResource Card}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
                         CornerRadius="8" Padding="10,7" MaxWidth="400">
-                    <TextBlock Text="{Binding TargetDir}" FontSize="12" Foreground="{StaticResource Dim}"
+                    <TextBlock Text="{Binding TargetDir}" FontSize="12" Foreground="{DynamicResource Dim}"
                                TextTrimming="CharacterEllipsis" ToolTip="{Binding TargetDir}" />
                 </Border>
                 <Button x:Name="ChangeButton" Content="Change folder" Style="{StaticResource Flat}"
@@ -56,7 +56,7 @@
                           Margin="22,0,0,0" Checked="Filter_Changed" Unchecked="Filter_Changed" />
             </StackPanel>
             <TextBlock x:Name="Progress" HorizontalAlignment="Right" VerticalAlignment="Center"
-                       FontSize="12" Foreground="{StaticResource Dim}" />
+                       FontSize="12" Foreground="{DynamicResource Dim}" />
         </Grid>
 
         <!-- options -->
@@ -65,15 +65,17 @@
                 <CheckBox x:Name="InstallReqBox" Style="{StaticResource Tick}"
                           Content="Install requirements.txt after updating (portable Python)"
                           Checked="InstallReq_Changed" Unchecked="InstallReq_Changed" />
-                <TextBlock Text="{Binding PipLabel}" FontSize="11" Foreground="{StaticResource Dim}"
+                <TextBlock Text="{Binding PipLabel}" FontSize="11" Foreground="{DynamicResource Dim}"
                            Margin="16,0,0,0" VerticalAlignment="Center" MaxWidth="430"
                            TextTrimming="CharacterEllipsis" ToolTip="{Binding PipTooltip}" />
                 <Button Content="settings" Style="{StaticResource Link}" Margin="4,0,0,0" Click="PipSettings_Click" />
             </StackPanel>
+            <StackPanel x:Name="ThemeSwatches" Orientation="Horizontal" HorizontalAlignment="Right"
+                        VerticalAlignment="Center" />
         </Grid>
 
         <!-- node list -->
-        <Border Grid.Row="3" Background="{StaticResource CardAlt}" BorderBrush="{StaticResource Line}"
+        <Border Grid.Row="3" Background="{DynamicResource CardAlt}" BorderBrush="{DynamicResource Line}"
                 BorderThickness="1" CornerRadius="12" Padding="8">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                 <ScrollViewer.Resources>
@@ -97,11 +99,11 @@
                                     <StackPanel Grid.Column="1" Margin="12,0,14,0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="disabled" FontSize="10" Foreground="{StaticResource Amber}"
+                                                       Foreground="{DynamicResource Text}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="disabled" FontSize="10" Foreground="{DynamicResource Amber}"
                                                        Margin="8,2,0,0" Visibility="{Binding IsDisabled, Converter={StaticResource BoolToVis}}" />
                                         </StackPanel>
-                                        <TextBlock Text="{Binding DetailText}" FontSize="12" Foreground="{StaticResource Dim}"
+                                        <TextBlock Text="{Binding DetailText}" FontSize="12" Foreground="{DynamicResource Dim}"
                                                    TextWrapping="Wrap" Margin="0,3,0,0" MaxHeight="36" TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
 
@@ -112,7 +114,7 @@
                                                        Foreground="{Binding StatusFg}" />
                                         </Border>
                                         <TextBlock Text="{Binding ShaText}" FontFamily="Consolas" FontSize="11"
-                                                   Foreground="#7D8CA1" HorizontalAlignment="Right" Margin="0,5,0,0" />
+                                                   Foreground="{DynamicResource Sha}" HorizontalAlignment="Right" Margin="0,5,0,0" />
                                         <Button Content="Install requirements" Style="{StaticResource PipButton}"
                                                 HorizontalAlignment="Right" Margin="0,5,0,0"
                                                 Click="InstallRequirements_Click"
@@ -128,13 +130,13 @@
 
         <!-- activity -->
         <Grid Grid.Row="4" Margin="2,12,0,6">
-            <TextBlock Text="Activity" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Dim}" />
+            <TextBlock Text="Activity" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Dim}" />
             <Button Content="Clear" Style="{StaticResource Link}" HorizontalAlignment="Right" Click="ClearLog_Click" />
         </Grid>
 
-        <Border Grid.Row="5" Background="{StaticResource CardAlt}" BorderBrush="{StaticResource Line}"
+        <Border Grid.Row="5" Background="{DynamicResource CardAlt}" BorderBrush="{DynamicResource Line}"
                 BorderThickness="1" CornerRadius="10" Padding="10,6">
-            <ListBox x:Name="LogList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource Dim}"
+            <ListBox x:Name="LogList" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource Dim}"
                      FontFamily="Consolas" FontSize="11" Focusable="False"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      ScrollViewer.VerticalScrollBarVisibility="Auto">
@@ -144,7 +146,7 @@
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="Padding" Value="0,2" />
-                        <Setter Property="Foreground" Value="{StaticResource Dim}" />
+                        <Setter Property="Foreground" Value="{DynamicResource Dim}" />
                         <Setter Property="Focusable" Value="False" />
                         <Setter Property="Template">
                             <Setter.Value>
@@ -160,7 +162,7 @@
 
         <!-- footer -->
         <Grid Grid.Row="6" Margin="0,14,0,0">
-            <TextBlock x:Name="FooterText" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource Dim}" />
+            <TextBlock x:Name="FooterText" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource Dim}" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Open folder" Style="{StaticResource Flat}" Click="OpenFolder_Click" />
                 <Button x:Name="UpdateButton" Content="Update selected" Style="{StaticResource Primary}"

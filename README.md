@@ -26,7 +26,16 @@ work.
   build (details below).
 - Fetches six repos at a time, so checking ~25 nodes takes seconds.
 - Remembers your `custom_nodes` folder, window size and options.
+- **Five themes**, switched live from the dots in the toolbar: Midnight, OLED, Nord, Dracula, Latte.
 - Activity log with every git and pip step.
+
+## Themes
+
+![Nord theme](screenshots/themes.png)
+
+Pick one of the five dots on the right of the toolbar; the window and the title bar change immediately
+and the choice is remembered. Midnight is the default, OLED is true black for dark rooms, Latte is the
+light one.
 
 ## Requirements
 
@@ -109,7 +118,7 @@ Useful for scripts and for checking without the window:
 ComfyNodeUpdater.exe --self-test report.txt            # builds throwaway repos, 18 checks, exit 0/1
 ComfyNodeUpdater.exe --check <custom_nodes> report.txt # fetch-only scan, writes report.txt (+ .json)
 ComfyNodeUpdater.exe --pip <node folder> [report.txt] [python.exe] [command]
-ComfyNodeUpdater.exe --folder <custom_nodes>           # open the window on that folder, without saving it
+ComfyNodeUpdater.exe --folder <custom_nodes> [--theme nord] # open the window on that folder, one-off
 ComfyNodeUpdater.exe --version
 ```
 

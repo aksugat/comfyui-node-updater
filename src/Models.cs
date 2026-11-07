@@ -18,16 +18,35 @@ public enum NodeState
 /// <summary>One folder under custom_nodes: what upstream has, what this checkout has, and whether it is safe to touch.</summary>
 public sealed class NodeEntry : INotifyPropertyChanged
 {
-    private static readonly Brush GreenBg = Frozen(0x1B, 0x36, 0x25);
-    private static readonly Brush GreenFg = Frozen(0x56, 0xD3, 0x64);
-    private static readonly Brush AmberBg = Frozen(0x3A, 0x2C, 0x12);
-    private static readonly Brush AmberFg = Frozen(0xE3, 0xB3, 0x41);
-    private static readonly Brush BlueBg = Frozen(0x14, 0x2A, 0x4C);
-    private static readonly Brush BlueFg = Frozen(0x7A, 0xB0, 0xFF);
-    private static readonly Brush RedBg = Frozen(0x3D, 0x1A, 0x1F);
-    private static readonly Brush RedFg = Frozen(0xFF, 0x7B, 0x84);
-    private static readonly Brush GreyBg = Frozen(0x1C, 0x23, 0x2F);
-    private static readonly Brush GreyFg = Frozen(0x9A, 0xA7, 0xB8);
+    private sealed record Chips(Brush GreenBg, Brush GreenFg, Brush BlueBg, Brush BlueFg,
+                                Brush AmberBg, Brush AmberFg, Brush RedBg, Brush RedFg,
+                                Brush GreyBg, Brush GreyFg);
+
+    private static readonly Dictionary<string, Chips> ChipCache = new();
+
+    /// <summary>Status colours of the current theme, built once per theme.</summary>
+    private static Chips ChipSet()
+    {
+        var theme = Themes.Current;
+
+        lock (ChipCache)
+        {
+            if (ChipCache.TryGetValue(theme.Id, out var cached)) return cached;
+
+            var line = Themes.Color(theme.Line);
+            var dim = Themes.Color(theme.Dim);
+
+            var chips = new Chips(
+                Tint(Themes.Color(theme.Green), 0x26), Solid(Themes.Color(theme.Green)),
+                Tint(Themes.Color(theme.Accent), 0x26), Solid(Themes.Color(theme.Accent)),
+                Tint(Themes.Color(theme.Amber), 0x26), Solid(Themes.Color(theme.Amber)),
+                Tint(Themes.Color(theme.Red), 0x26), Solid(Themes.Color(theme.Red)),
+                Tint(line, 0x55), Solid(dim));
+
+            ChipCache[theme.Id] = chips;
+            return chips;
+        }
+    }
 
     private NodeState _state = NodeState.Unknown;
     private bool _selected;
@@ -111,23 +130,37 @@ public sealed class NodeEntry : INotifyPropertyChanged
         _ => IsNonGit ? "not a git repo" : "not checked",
     };
 
-    public Brush StatusBg => State switch
+    public Brush StatusBg
     {
-        NodeState.UpToDate => GreenBg,
-        NodeState.UpdateAvailable => BlueBg,
-        NodeState.Protected => AmberBg,
-        NodeState.Error => RedBg,
-        _ => GreyBg,
-    };
+        get
+        {
+            var chips = ChipSet();
+            return State switch
+            {
+                NodeState.UpToDate => chips.GreenBg,
+                NodeState.UpdateAvailable => chips.BlueBg,
+                NodeState.Protected => chips.AmberBg,
+                NodeState.Error => chips.RedBg,
+                _ => chips.GreyBg,
+            };
+        }
+    }
 
-    public Brush StatusFg => State switch
+    public Brush StatusFg
     {
-        NodeState.UpToDate => GreenFg,
-        NodeState.UpdateAvailable => BlueFg,
-        NodeState.Protected => AmberFg,
-        NodeState.Error => RedFg,
-        _ => GreyFg,
-    };
+        get
+        {
+            var chips = ChipSet();
+            return State switch
+            {
+                NodeState.UpToDate => chips.GreenFg,
+                NodeState.UpdateAvailable => chips.BlueFg,
+                NodeState.Protected => chips.AmberFg,
+                NodeState.Error => chips.RedFg,
+                _ => chips.GreyFg,
+            };
+        }
+    }
 
     public string ShaText
     {
@@ -160,9 +193,16 @@ public sealed class NodeEntry : INotifyPropertyChanged
         }
     }
 
-    private static Brush Frozen(byte r, byte g, byte b)
+    private static Brush Solid(Color color)
     {
-        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
+    private static Brush Tint(Color color, byte alpha)
+    {
+        var brush = new SolidColorBrush(Color.FromArgb(alpha, color.R, color.G, color.B));
         brush.Freeze();
         return brush;
     }

@@ -7,7 +7,7 @@
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         Icon="app.ico"
-        Background="{StaticResource Bg}"
+        Background="{DynamicResource Bg}"
         FontFamily="Segoe UI"
         UseLayoutRounding="True">
 
@@ -23,9 +23,9 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Python that runs ComfyUI" FontSize="13" FontWeight="SemiBold"
-                   Foreground="{StaticResource Text}" />
+                   Foreground="{DynamicResource Text}" />
         <TextBlock Grid.Row="1" Text="Used when the command below is the default. Point it at the python.exe of the environment ComfyUI runs in (for conda: …\envs\&lt;name&gt;\python.exe)."
-                   FontSize="11" Foreground="{StaticResource Dim}" TextWrapping="Wrap" Margin="0,3,0,8" />
+                   FontSize="11" Foreground="{DynamicResource Dim}" TextWrapping="Wrap" Margin="0,3,0,8" />
 
         <Grid Grid.Row="2" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
@@ -33,21 +33,21 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBox x:Name="PythonBox" Grid.Column="0" FontFamily="Consolas" FontSize="12"
-                     Background="{StaticResource Card}" Foreground="{StaticResource Text}"
-                     BorderBrush="{StaticResource Line}" Padding="8,6" VerticalContentAlignment="Center" />
+                     Background="{DynamicResource Card}" Foreground="{DynamicResource Text}"
+                     BorderBrush="{DynamicResource Line}" Padding="8,6" VerticalContentAlignment="Center" />
             <Button Grid.Column="1" Content="Browse" Style="{StaticResource Flat}" Margin="8,0,0,0" Click="Browse_Click" />
         </Grid>
 
         <TextBlock Grid.Row="3" Text="Command that runs pip" FontSize="13" FontWeight="SemiBold"
-                   Foreground="{StaticResource Text}" />
+                   Foreground="{DynamicResource Text}" />
         <TextBlock Grid.Row="4" Text="Ends with -m pip. Use it to install into a conda environment or any other setup. {python} is replaced by the path above."
-                   FontSize="11" Foreground="{StaticResource Dim}" TextWrapping="Wrap" Margin="0,3,0,8" />
+                   FontSize="11" Foreground="{DynamicResource Dim}" TextWrapping="Wrap" Margin="0,3,0,8" />
 
         <StackPanel Grid.Row="5">
             <TextBox x:Name="LauncherBox" FontFamily="Consolas" FontSize="12"
-                     Background="{StaticResource Card}" Foreground="{StaticResource Text}"
-                     BorderBrush="{StaticResource Line}" Padding="8,6" />
-            <TextBlock FontSize="11" Foreground="{StaticResource Dim}" Margin="0,10,0,0" TextWrapping="Wrap">
+                     Background="{DynamicResource Card}" Foreground="{DynamicResource Text}"
+                     BorderBrush="{DynamicResource Line}" Padding="8,6" />
+            <TextBlock FontSize="11" Foreground="{DynamicResource Dim}" Margin="0,10,0,0" TextWrapping="Wrap">
                 <Run Text="Examples:" FontWeight="SemiBold" />
                 <LineBreak />
                 <Run Text="{}{python} -m pip          (default: the python above)" />

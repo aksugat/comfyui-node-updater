@@ -18,6 +18,9 @@ public sealed class Settings
     /// <summary>How pip is reached: "{python} -m pip", or a conda/activation command ending in "-m pip".</summary>
     public string PipLauncher { get; set; } = PipInstaller.DefaultLauncher;
 
+    /// <summary>Theme id from Themes.All.</summary>
+    public string Theme { get; set; } = "midnight";
+
     private static string Folder =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ComfyNodeUpdater");
 
