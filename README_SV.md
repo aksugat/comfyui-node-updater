@@ -9,12 +9,9 @@ Och ingenting lokalt kommer att ändras.
 
 ![ComfyUI Node Updater with three nodes behind upstream](screenshots/updates.png)
 
-## Why
-
-Updating custom nodes is usually one of three things: a bulk script that resets every repo (and
-silently throws away local commits or edits), a Manager "update all" that gives you no say, or a
-terminal per folder. This app shows what is actually behind, lets you pick, and refuses to destroy
-work.
+## Varför
+När du uppdaterar `custom nodes` så är det otast om 3 saker:
+ett så kallat "bulk" skript, som resettar alla repon (och tyst kastar lokala commits och ändringar), eller en Wizard som uppdaterar allt som ger dig inget val att säga ja eller nej - eller, en terminal per mapp. Det här programmet siktar på att lösa dessa problem. Det visar dig vad som händer bakom kulliserna, låter dig välja saker och vägrar ha sönder ditt arbete.
 
 ## Features
 
