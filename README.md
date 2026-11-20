@@ -1,4 +1,6 @@
 # ComfyUI Node Updater
+[![English](https://img.shields.io/badge/lang-English-blue.svg?style=for-the-badge)](README.md)
+[![Svenska](https://img.shields.io/badge/lang-Svenska-green.svg?style=for-the-badge)](README_SV.md)
 
 A small Windows app for ComfyUI's `custom_nodes` folder: it tells you which nodes have upstream
 commits waiting, and updates **only the ones you tick**. No more `git reset --hard` on everything,
