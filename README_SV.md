@@ -1,8 +1,5 @@
 # ComfyUI Node Updater
 
-'
-`a` `
-
 Ett litet Windows-program för ComfyUI's `custom_nodes` mapp: Detta program berättar för dig vilka noder INväntar uppdaterade ("upstream") commits.
 Programmet uppdaterar **endast de noder du klickar in på** - Inga fler `git reset --hard` på allt.
 Och ingenting lokalt kommer att ändras.
