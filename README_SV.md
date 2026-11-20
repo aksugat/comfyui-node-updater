@@ -19,7 +19,7 @@ ett så kallat "bulk" skript, som resettar alla repon (och tyst kastar lokala co
 - **Lokalt arbete är skyddat**: en såkallad lokal commit eller en "uncommitted" spårad fil markerar raden `left alone` (amber) och dess checkbox är avstängd - en reset skulle förstöra den, det här programmet kommer inte förstöra den dock.
 - **Requirements Wizard** (Frivillig): installerar en nods `requirements.txt` fil i din ComfyUI
   Python, antingen pär nod eller automatiskt efter uppdateringar. Den kommer inte att replejsa ROCm torch/triton builds (detaljer nedan).
-- Fetches six repos at a time, so checking ~25 nodes takes seconds.
+- Drar 6 reporn åt gången, så checkar ~25 noder tar bara några sekunder.
 - kommer ihåg din `custom_nodes` mapp, fönster size och andra inställningar/flaggor.
 - **Fem Teman**, är ändratt live från de 3 punkterna i toolbaren: Midnight, OLED, Nord, Dracula, Latte.
 - Aktivitets log med varje `git` & `pip` steg.
