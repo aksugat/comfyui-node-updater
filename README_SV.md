@@ -15,7 +15,7 @@ ett så kallat "bulk" skript, som resettar alla repon (och tyst kastar lokala co
 ## Funktioner
 
 - **Pär-nod vy**: aktuella comitten → "upstream" commit, hur många commits som ligger bakom, och subjekten från upp till tre av dem.
-- **Klicka i på vad du vill**, endast uppdaterar dom i-klickade (`Select all` / `Select none`) och en (`Only nodes with updates`) filter.
+- **Klicka i på vad du vill**, endast uppdaterar dom i-klickade (`Select all` / `Select none`) och ett (`Only nodes with updates`) filter.
 - **Local work is protected**: a local commit or an uncommitted tracked file marks the row
   `left alone` (amber) and its checkbox is disabled — a reset would destroy it, so the app won't.
 - **Requirements installer** (optional): installs a node's `requirements.txt` into your ComfyUI
