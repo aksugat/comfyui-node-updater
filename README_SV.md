@@ -109,7 +109,7 @@ ComfyNodeUpdater.exe --folder <custom_nodes> [--theme nord] # öppna fönstret p
 ComfyNodeUpdater.exe --version
 ```
 
-`--check` uppdaterar aldrig någonting. `--pip` följer samma filter- och dry-run-regler som fönstret.
+`--check` uppdaterar aldrig någonting. `--pip` följer samma filter - och dry-run-regler som fönstret.
 
 ## Bygga
 
