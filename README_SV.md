@@ -4,12 +4,12 @@
 
 Ett litet Windows-program för ComfyUI's `custom_nodes` mapp: Detta program berättar för dig vilka noder INväntar uppdaterade ("upstream") commits.
 Programmet uppdaterar **endast de noder du klickar in på** - Inga fler `git reset --hard` på allt.
-Och ingenting lokalt kommer att ändras.
+Inget lokalt kommer att ändras.
 
 ![ComfyUI Node Updater with three nodes behind upstream](screenshots/updates.png)
 
-## Varför
-När du uppdaterar `custom nodes` så är det otast om 3 saker:
+## Anledning
+När du uppdaterar `custom nodes` så är det oftast om 3 saker:
 ett så kallat "bulk" skript, som resettar alla repon (och tyst kastar lokala commits och ändringar), eller en Wizard som uppdaterar allt som ger dig inget val att säga ja eller nej - eller, en terminal per mapp. Det här programmet siktar på att lösa dessa problem. Det visar dig vad som händer bakom kulliserna, låter dig välja saker och vägrar ha sönder ditt arbete.
 
 ## Funktioner
@@ -17,57 +17,53 @@ ett så kallat "bulk" skript, som resettar alla repon (och tyst kastar lokala co
 - **Pär-nod vy**: aktuella comitten → "upstream" commit, hur många commits som ligger bakom, och subjekten från upp till tre av dem.
 - **Klicka i på vad du vill**, endast uppdaterar dom i-klickade (`Select all` / `Select none`) och ett (`Only nodes with updates`) filter.
 - **Lokalt arbete är skyddat**: en såkallad lokal commit eller en "uncommitted" spårad fil markerar raden `left alone` (amber) och dess checkbox är avstängd - en reset skulle förstöra den, det här programmet kommer inte förstöra den dock.
-- **Requirements installer** (optional): installs a node's `requirements.txt` into your ComfyUI
-  Python, either per node or automatically after updates. It refuses to replace the ROCm torch/triton
-  build (details below).
+- **Requirements Wizard** (Frivillig): installerar en nods `requirements.txt` fil i din ComfyUI
+  Python, antingen pär nod eller automatiskt efter uppdateringar. Den kommer inte att replejsa ROCm torch/triton builds (detaljer nedan).
 - Fetches six repos at a time, so checking ~25 nodes takes seconds.
-- Remembers your `custom_nodes` folder, window size and options.
-- **Five themes**, switched live from the dots in the toolbar: Midnight, OLED, Nord, Dracula, Latte.
-- Activity log with every git and pip step.
+- kommer ihåg din `custom_nodes` mapp, fönster size och andra inställningar/flaggor.
+- **Fem Teman**, är ändratt live från de 3 punkterna i toolbaren: Midnight, OLED, Nord, Dracula, Latte.
+- Aktivitets log med varje `git` & `pip` steg.
 
-## Themes
+## Teman
 
 ![Nord theme](screenshots/themes.png)
+Välj en av 5 punkter på den högra sidan av toolbaren; fönstret och titeln ändras omedelbart och valet kommer bli ihågkommet.
+temat "Midnight" är det defaulta temat, OLED är på för 100% mörka rum och Latte är den ljusa.
 
-Pick one of the five dots on the right of the toolbar; the window and the title bar change immediately
-and the choice is remembered. Midnight is the default, OLED is true black for dark rooms, Latte is the
-light one.
-
-## Requirements
+## Beroenden
 
 - Windows 10/11
-- git on `PATH`
-- .NET 8 Desktop Runtime for the release build (already present on most Windows installs with .NET;
-  otherwise [download it](https://dotnet.microsoft.com/download/dotnet/8.0)). Build it self-contained
-  if you need a machine without it.
+- `git` i `PATH`
+- .NET 8 Desktop Runtime för release-builden (finns redan på de flesta Windows-installationer med .NET;
+  annars [ladda ner det här](https://dotnet.microsoft.com/download/dotnet/8.0)). Bygga den fristående
+  ("*self-contained*") ifall du behöver köra det på en maskin som inte har detta.
 
-## Getting it
+## Kom igång
 
-- **Download**: grab `ComfyNodeUpdater.exe` from [Releases](../../releases) — one file, no installer.
-- **Build**: see [Building](#building).
+- **Ladda ner**: hämta `ComfyNodeUpdater.exe` från [Releases](../../releases) - en enda fil, inget installationsprogram.
+- **Bygga**: se [Bygga](#Bygga).
 
-## Using it
+## Hur / Användning
 
-1. Start `ComfyNodeUpdater.exe`. It checks the remembered folder; `Change folder` picks your
-   `custom_nodes` directory (e.g. `H:\rocm313\ComfyUI\custom_nodes`).
-2. Blue rows have updates. Tick the ones you want and press **Update selected**.
-3. Restart ComfyUI so the new node code loads.
+1. Starta `ComfyNodeUpdater.exe`. Den kontrollerar den senast ihågkomna mappen; med `Change folder` väljer du din
+   `custom_nodes`-katalog (t.ex. `H:\rocm313\ComfyUI\custom_nodes`).
+2. Blå rader har uppdateringar. Bocka i de du vill ha och tryck på **Update selected**.
+3. Starta om ComfyUI så att den nya nodkoden laddas in.
 
-A node you just cloned is already at upstream's commit, so it never shows as updateable. That's fine
-— its requirements still matter:
+En nod du nyss klonat ligger redan på uppströms (*upstream*) senaste commit, så den visas aldrig som uppdateringsbar. Det gör inget, dess beroenden (*requirements*) spelar fortfarande roll:
 
-### Fresh clones and `requirements.txt`
+### Färska kloner och `requirements.txt`
 
-Every row with a `requirements.txt` shows an **Install requirements** button, even when the node is
+Varje rad med en `requirements.txt` visar en **Install requirements**-knapp, även när noden är
 `up to date`:
 
-![Install requirements after a fresh clone](screenshots/requirements.png)
+![Installera beroenden efter en färsk klon](screenshots/requirements.png)
 
-- **By hand**: click the button — it shows what would be installed and asks first.
-- **Automatically**: tick `Install requirements.txt after updating (portable Python)`; every node
-  that gets updated installs right after the reset. The target interpreter is on the same line
-  (`python: …\python_embeded\python.exe`); `settings` opens the pip settings.
-
+- **Manuellt**: klicka på knappen - den visar vad som skulle installeras och frågar först.
+- **Automatiskt**: bocka i `Install requirements.txt after updating (portable Python)`; varje nod
+  som uppdateras installeras direkt efter återställningen. Måletolkens sökväg står på samma rad
+  (`python: …\python_embeded\python.exe`); `settings` öppnar pip-inställningarna.
+  
 ### Conda or any other environment
 
 `settings` takes a command that ends with `-m pip`, so the install can happen in whichever
@@ -103,7 +99,7 @@ A blind `pip install -r requirements.txt` can pull CUDA wheels over a ROCm envir
 - No network calls of its own: only the git fetch/pull of the folder you point it at, and pip when
   you ask it to install something.
 
-The update itself is `git reset --hard <upstream>` — on a clean node, the same thing `git pull` would
+The update itself is `git reset --hard <upstream>` - on a clean node, the same thing `git pull` would
 give you.
 
 ## Command line
@@ -120,7 +116,7 @@ ComfyNodeUpdater.exe --version
 
 `--check` never updates anything. `--pip` follows the same filter and dry-run rules as the window.
 
-## Building
+## Bygga
 
 Source is C# / .NET 8 / WPF, no NuGet packages.
 
