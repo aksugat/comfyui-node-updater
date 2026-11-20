@@ -10,12 +10,10 @@ Och ingenting lokalt kommer att ändras.
 När du uppdaterar `custom nodes` så är det otast om 3 saker:
 ett så kallat "bulk" skript, som resettar alla repon (och tyst kastar lokala commits och ändringar), eller en Wizard som uppdaterar allt som ger dig inget val att säga ja eller nej - eller, en terminal per mapp. Det här programmet siktar på att lösa dessa problem. Det visar dig vad som händer bakom kulliserna, låter dig välja saker och vägrar ha sönder ditt arbete.
 
-## Features
+## Funktioner
 
-- **Per-node view**: current commit → upstream commit, how many commits behind, and the subjects of
-  up to three of them.
-- **Tick what you want**, then one button updates exactly those. `Select all` / `Select none` and an
-  `Only nodes with updates` filter.
+- **Pär-nod vy**: aktuella comitten → "upstream" commit, hur många commits som ligger bakom, och subjekten från upp till tre av dem.
+- **Klicka i på vad du vill**, endast uppdaterar dom i-klickade (`Select all` / `Select none`) och en (`Only nodes with updates`) filter.
 - **Local work is protected**: a local commit or an uncommitted tracked file marks the row
   `left alone` (amber) and its checkbox is disabled — a reset would destroy it, so the app won't.
 - **Requirements installer** (optional): installs a node's `requirements.txt` into your ComfyUI
