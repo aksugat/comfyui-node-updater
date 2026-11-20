@@ -46,7 +46,7 @@ temat "Midnight" är det defaulta temat, OLED är på för 100% mörka rum och L
 ## Hur / Användning
 
 1. Starta `ComfyNodeUpdater.exe`. Den kontrollerar den senast ihågkomna mappen; med `Change folder` väljer du din
-   `custom_nodes`-katalog (t.ex. `H:\rocm313\ComfyUI\custom_nodes`).
+   `custom_nodes`-mapp (t.ex. `H:\rocm313\ComfyUI\custom_nodes`).
 2. Blå rader har uppdateringar. Bocka i de du vill ha och tryck på **Update selected**.
 3. Starta om ComfyUI så att den nya nodkoden laddas in.
 
@@ -63,62 +63,57 @@ Varje rad med en `requirements.txt` visar en **Install requirements**-knapp, äv
 - **Automatiskt**: bocka i `Install requirements.txt after updating (portable Python)`; varje nod
   som uppdateras installeras direkt efter återställningen. Måletolkens sökväg står på samma rad
   (`python: …\python_embeded\python.exe`); `settings` öppnar pip-inställningarna.
-  
-### Conda or any other environment
 
-`settings` takes a command that ends with `-m pip`, so the install can happen in whichever
-environment ComfyUI runs in:
+### Conda eller någon annan miljö
 
-![pip settings](screenshots/pip-settings.png)
+`settings` tar ett kommando som slutar med `-m pip`, så installationen kan ske i vilken miljö som helst där ComfyUI körs:
+
+![pip-inställningar](screenshots/pip-settings.png)
 
 ```text
-{python} -m pip                                          (default: the python path above)
+{python} -m pip                                          (standard: python-sökvägen ovan)
 conda run -n comfy --no-capture-output python -m pip
 call C:\miniconda3\Scripts\activate.bat comfy && python -m pip
 ```
 
-`{python}` is replaced by the path in the first field, so the simple conda case is pointing that
-field at `…\miniconda3\envs\comfy\python.exe`. The command runs through `cmd`, so `&&` chains and
-activation scripts behave as they do in a terminal.
+`{python}` ersätts med sökvägen i det första fältet, så i det enkla conda-fallet pekar man det fältet mot `…\miniconda3\envs\comfy\python.exe`. Kommandot körs via `cmd`, så `&&`-kedjor och aktiveringsskript fungerar precis som i en terminal.
 
-### It can't break your ROCm build
+### Den kan inte förstöra din ROCm-installation
 
-A blind `pip install -r requirements.txt` can pull CUDA wheels over a ROCm environment. This app:
+En blind `pip install -r requirements.txt` kan dra in CUDA-paket över en ROCm-miljö. Den här appen:
 
-1. Drops `torch`, `torchvision`, `torchaudio`, `triton`, `triton-windows`, `pytorch-triton`,
-   `pytorch-triton-rocm`, `xformers`, `flash-attn`, `tensorrt`, `onnxruntime-gpu` from the file, and
-   drops pip option lines (`-r`, `--index-url`, `-e`) so they can't come back in.
-2. Runs `pip install --dry-run --report` first; if a *dependency* would install any blocked package,
-   it refuses and names it before writing anything.
-3. Only then does the real install run, with output streaming into the Activity log.
+1. Tar bort `torch`, `torchvision`, `torchaudio`, `triton`, `triton-windows`, `pytorch-triton`,
+   `pytorch-triton-rocm`, `xformers`, `flash-attn`, `tensorrt`, `onnxruntime-gpu` från filen, och
+   tar bort pip-alternativrader (`-r`, `--index-url`, `-e`) så att de inte kan komma in igen.
+2. Kör `pip install --dry-run --report` först; om ett *beroende* skulle installera något blockerat paket,
+   nekar den och namnger det innan något skrivs till disk.
+3. Först därefter körs den riktiga installationen, med utdata strömmad direkt till aktivitetsloggen.
 
-## What it won't do
+## Vad den inte gör
 
-- No `git clean`, no file deletion, no touching untracked files.
-- No reset on a node with local commits or uncommitted tracked files.
-- No network calls of its own: only the git fetch/pull of the folder you point it at, and pip when
-  you ask it to install something.
+- Ingen `git clean`, ingen filborttagning, och den rör inte ospårade (untracked) filer.
+- Ingen återställning (reset) på en nod med lokala commits eller ej committade spårade filer.
+- Inga egna nätverksanrop: endast git fetch/pull för mappen du pekar den mot, samt pip när du ber den att installera något.
 
-The update itself is `git reset --hard <upstream>` - on a clean node, the same thing `git pull` would
-give you.
+Själva uppdateringen är `git reset --hard <upstream>` – på en ren nod ger det exakt samma resultat som `git pull`.
 
-## Command line
+## Kommandorad
 
-Useful for scripts and for checking without the window:
+Användbart för skript och för att kontrollera utan fönstret:
 
 ```text
-ComfyNodeUpdater.exe --self-test report.txt            # builds throwaway repos, 18 checks, exit 0/1
-ComfyNodeUpdater.exe --check <custom_nodes> report.txt # fetch-only scan, writes report.txt (+ .json)
+ComfyNodeUpdater.exe --self-test report.txt            # skapar tillfälliga repos, 18 kontroller, exit 0/1
+ComfyNodeUpdater.exe --check <custom_nodes> report.txt # endast fetch-skanning, skriver report.txt (+ .json)
 ComfyNodeUpdater.exe --pip <node folder> [report.txt] [python.exe] [command]
-ComfyNodeUpdater.exe --folder <custom_nodes> [--theme nord] # open the window on that folder, one-off
+ComfyNodeUpdater.exe --folder <custom_nodes> [--theme nord] # öppna fönstret på den mappen, engångskörning
 ComfyNodeUpdater.exe --version
 ```
 
-`--check` never updates anything. `--pip` follows the same filter and dry-run rules as the window.
+`--check` uppdaterar aldrig någonting. `--pip` följer samma filter- och dry-run-regler som fönstret.
 
 ## Bygga
 
-Source is C# / .NET 8 / WPF, no NuGet packages.
+Källkoden är i C# / .NET 8 / WPF, utan NuGet-paket.
 
 ```powershell
 git clone https://github.com/aksugat/comfyui-node-updater
@@ -126,50 +121,49 @@ cd comfyui-node-updater
 ./build.ps1            # -> dist\ComfyNodeUpdater.exe
 ```
 
-or by hand:
+eller manuellt:
 
 ```powershell
 dotnet publish src -c Release -r win-x64 --self-contained false `
   -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist
 ```
 
-For a machine without .NET, add `--self-contained true` (a ~150 MB single file).
+För en dator utan .NET, lägg till `--self-contained true` (en enstaka fil på ca 150 MB).
 
-`./build.ps1 -SelfContained` does that.
+`./build.ps1 -SelfContained` gör det åt dig.
 
-## Layout
+## Struktur
 
-| Path | What |
+| Sökväg | Beskrivning |
 |---|---|
-| `src/MainWindow.xaml(.cs)` | the window |
-| `src/NodeChecker.cs` | scan, fetch, behind/ahead, the local-work guard |
-| `src/Git.cs` | the git runner (no console window, no prompts) |
-| `src/PipInstaller.cs` | requirements filter, dry-run guard, install |
-| `src/Models.cs` | one row's state and text |
-| `src/Settings.cs` | remembered folder, python, options |
-| `src/SelfTest.cs` | throwaway-repo checks used by `--self-test` and CI |
-| `src/Headless.cs` | `--check` mode |
+| `src/MainWindow.xaml(.cs)` | fönstret |
+| `src/NodeChecker.cs` | skanning, fetch, behind/ahead, skydd mot lokala ändringar |
+| `src/Git.cs` | git-köraren (inget konsolfönster, inga frågor) |
+| `src/PipInstaller.cs` | filtrering av requirements, dry-run-skydd, installation |
+| `src/Models.cs` | en rads status och text |
+| `src/Settings.cs` | sparad mapp, python-sökväg, alternativ |
+| `src/SelfTest.cs` | kontroller med tillfälliga repos som används av `--self-test` och CI |
+| `src/Headless.cs` | `--check`-läge |
 
-## Notes
+## Anteckningar
 
-- `.NET 8` is required at runtime for the release build; the self-contained build is not.
-- The app only reads git state; it does not clone, delete or add nodes.
-- Tested on Windows 11 with ComfyUI 0.44 and ROCm, against throwaway repositories for the guard and
-  end-to-end through the window for the update path.
+- `.NET 8` krävs vid körning för release-bygget; det krävs inte för det fristående (self-contained) bygget.
+- Appen läser endast git-status; den klonar, raderar eller lägger inte till noder.
+- Testad på Windows 11 med ComfyUI 0.44 och ROCm, mot tillfälliga repos för skyddsmekanismerna och
+  från början till slut genom fönstret för uppdateringsflödet.
 
-## Releasing
+## Publicera en ny version
 
-The version lives in `src/ComfyNodeUpdater.csproj` (`<Version>`). To publish:
+Versionen ligger i `src/ComfyNodeUpdater.csproj` (`<Version>`). För att publicera:
 
 ```powershell
-# bump <Version>, commit, then:
+# höj <Version>, gör en commit, och kör sedan:
 git tag v1.0.1
 git push origin v1.0.1
 ```
 
-CI builds the exe, runs the 18-check self-test, and attaches the binary to a GitHub release for that
-tag.
+CI bygger exe-filen, kör självtestet med 18 kontroller och bifogar binärfilen till en GitHub-release för den taggen.
 
-## License
+## Licens
 
-MIT — see [LICENSE](LICENSE).
+MIT — se [LICENSE](LICENSE).
