@@ -1,4 +1,6 @@
 # ComfyUI Node Updater
+[![English](https://img.shields.io/badge/lang-English-blue.svg?style=for-the-badge)](README.md)
+[![Svenska](https://img.shields.io/badge/lang-Svenska-green.svg?style=for-the-badge)](README_SV.md)
 
 Ett litet Windows-program för ComfyUI's `custom_nodes` mapp: Detta program berättar för dig vilka noder INväntar uppdaterade ("upstream") commits.
 Programmet uppdaterar **endast de noder du klickar in på** - Inga fler `git reset --hard` på allt.
